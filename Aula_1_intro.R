@@ -1,3 +1,4 @@
+install.packages("zoo")
 #limpa variaveis da memoria
 rm(list = ls())
 
