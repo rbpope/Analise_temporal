@@ -1,0 +1,312 @@
+---
+title: "Trabalho 2 de Análise de Série Temporal"
+author: "Carlos Lopes, Cristiane Fractal, Cristovão Moreira Freitas Junior, Fábio Karpusca Marin, Renato Bastos Pope"
+date: "20/04/2021"
+output:
+  word_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+rm(list = ls())
+```
+```{r Bibliotecas Necessárias, message=FALSE, warning=FALSE, include=FALSE, paged.print=TRUE}
+library(forecast)
+library(readxl)
+library(zoo)
+library(lubridate)
+library(urca)
+```
+Apresentação do caso:
+
+Despesas de telefonia móvel – Banco X
+Os dados apresentados são referentes a despesas somadas de todos os contratos de prestação de serviço de telefonia móvel, de janeiro de 2015 até março de 2021. Ao longo desse período foram assinados 12 contratos, com vigência de 5 anos cada, para uma média de 18.000 linhas ativas entre 2015 e 2019, e 25.000 linhas ativas a partir de 2020. Até o final de 2020 os contratos faturavam os seguintes serviços:
+  •	Assinatura mensal da linha e cessão de comodato do dispositivo;
+  •	Ligações telefônicas, por minuto e por destinação;
+  •	SMS;
+  •	Pacote de dados;
+  •	Roaming nacional e internacional;
+  •	Outros serviços de valor agregado.
+A partir de 2021 os contratos passarão a faturar os seguintes serviços:
+  •	Assinatura mensal da linha incluindo pacote de dados;
+  •	Ligações nacionais, SMS e roaming nacional são ilimitados, sem custo adicional;
+  •	Roaming internacional e outros serviços de valor agregado são cobrados à parte.
+
+Importar a base de dados
+```{r}
+Dados_Telefonia_Movel <- read_excel("Dados Telefonia Movel.xlsx")
+db <- Dados_Telefonia_Movel
+```
+Converter a base de dados em série temporal:
+```{r}
+db_ts <- ts(db$`Telefonia Móvel`, start=c(2015, 1), end=c(2021, 3), frequency = 12)
+```
+
+Análise estatística da série:
+```{r}
+summary(db_ts)
+```
+
+Plotar o gráfico da série temporal:
+```{r}
+plot(db_ts, xlab="Tempo", ylab="Despesas", ylim=c(342000, 6013000), type="l", main="Série Temporal")
+```
+Definir o tamanho da amostra de treinamento e da amostra de teste:
+```{r}
+amostra_validacao <- 20
+amostra_treino <- length(db_ts) - amostra_validacao
+```
+
+Programar a amostra de treinamento:
+```{r}
+treinamento_ts <-window(db_ts, start=c(2015, 1), end=c(2015, amostra_treino))
+```
+Programar a amostra de validação:
+```{r}
+validacao_ts <- window(db_ts, start=c(2015, amostra_treino + 1), end=c(2015, amostra_treino + amostra_validacao))
+```
+PLotagem do gráfico do treinamento com validação:
+```{r}
+plot(treinamento_ts, xlab="Tempo", ylab="Despesas", xaxt="n" , ylim=c(342000, 6013000), xlim=c(2015, 2021), type="l", main="Treinamento e Validação")
+axis(1, at=seq(2015, 2021,1), labels=format(seq(2015, 2021,1)))
+lines(validacao_ts, bty="l", col="red")
+```
+Confecção do modelo Naive:
+```{r Modelo Naïve}
+modelo_naive <- naive(treinamento_ts, level=0, h=amostra_validacao)
+accuracy(modelo_naive, validacao_ts)
+```
+Grafico da série temporal de treinamento, validação e modelo naive
+```{r}
+plot(modelo_naive, xlab="Tempo", ylab="Despesas", xaxt="s" , ylim=c(342000, 6013000), xlim=c(2015, 2021), bty="l", flty=2, main="Previsão do Modelo Naive")
+axis(1, at=seq(2015, 2021,1), labels=format(seq(2015, 2021,1)))
+lines(validacao_ts, bty="l", col="red")
+```
+#Modelo de Tendência linear:
+```{r Modelo de Tendência linear}
+modelo_tendencia_linear <- tslm(treinamento_ts ~ trend)
+summary(modelo_tendencia_linear)
+
+plot(modelo_tendencia_linear$residuals, xlab="Tempo", ylab="Resíduos", bty="l", main="Resíduos do modelo de regreção linear")
+lines(modelo_tendencia_linear$fitted.values, lwd="2", col="orange")
+Acf(modelo_tendencia_linear$residuals, main="Modelo de Tendencia Linear")
+
+checkresiduals(modelo_tendencia_linear, test="LB")
+plot(treinamento_ts, xlab="Tempo", ylab="Despesa", bty="l", main="Modelo com Tendência")
+lines(modelo_tendencia_linear$fitted.values, lwd="2", col="orange")
+modelo_tendencia_linear_proj <- forecast(modelo_tendencia_linear, h=amostra_validacao, level=0.95)
+
+plot(modelo_tendencia_linear_proj, xlab="Tempo", ylab="Despesas", xaxt="n" , xlim=c(2015, 2021.75), bty="l", flty=2, main="Projeção do Modelo de Regressão Linear")
+axis(1, at=seq(2015, 2021, 1), labels=format(seq(2015,2021,1)))
+lines(validacao_ts, col="red")
+lines(modelo_tendencia_linear_proj$fitted, lwd="2", col="blue")
+
+checkresiduals(modelo_tendencia_linear, test="LB")
+accuracy(modelo_tendencia_linear_proj, validacao_ts)
+```
+Pelo baixo valor de R Square e AR-Squared, o Modelo de Tendência Linear não foi satisfatório. Partimos para o próximo modelo.
+#Modelo de Tendencia linear com Sazonalidade
+```{r Modelo de Tendencia linear com Sazonalidade}
+modelo_tendencia_linear_sazonalidade <- tslm(treinamento_ts ~ season+trend)
+summary(modelo_tendencia_linear_sazonalidade)
+
+plot(modelo_tendencia_linear_sazonalidade$residuals, xlab="Tempo", ylab="Resíduos",ylim=c(-1500000, 4000000), type="l")
+Acf(modelo_tendencia_linear_sazonalidade$residuals)
+checkresiduals(modelo_tendencia_linear_sazonalidade, test="LB", main="Teste de Ljung-Box")
+
+plot(db_ts, xlab="Tempo", ylab="Despesas", ylim=c(342000, 6013000), type="l")
+lines(modelo_tendencia_linear_sazonalidade$fitted.values, lwd=2, col="Blue")
+modelo_tendencia_linear_sazonalidade_proj <- forecast(modelo_tendencia_linear_sazonalidade, h = 55, level=0.95)        
+
+plot(modelo_tendencia_linear_sazonalidade_proj, xlab="Tempo", ylab="Despesas", xaxt="s" , ylim=c(-1500000, 6013000), xlim=c(2015, 2021), type="l", flty=3)
+axis(1, at=seq(2015, 2021), labels=format(seq(2015, 2021)))
+lines(validacao_ts)
+lines(modelo_tendencia_linear_sazonalidade_proj$fitted, lwd=2, col="blue")
+
+accuracy(modelo_tendencia_linear_sazonalidade_proj, validacao_ts)
+
+```
+O Erro Médio Absoluto Percentual (MAPE) deste modelo foi superior ao do modelo Naive. Baseado neste dado, passaremos para um Modelo de Média móvel.
+
+Modelo de Média Móvel
+```{r Modelo de Média Móvel}
+ma_simples <- rollmean(db_ts, k=12, align="right")
+ma_centrada <- ma(db_ts, order=12)
+
+plot(db_ts, ylim=c(342000, 6013000), ylab="Despesas", xlab="Tempo", bty="l", xaxt="s", xlim=c(2015,2021))
+axis(1, at=seq(2015, 2021, 1), labels=format(seq(2015, 2021, 1)))
+lines(ma_centrada, lwd=2)
+lines(ma_simples, lwd=2, lty=2)
+legend(2019,7000000, c("Despesas", "MA Centrada", "MA Simples"), lty=c(1,1,2), lwd=c(1,2,2), bty="n")
+
+ma_simples_treinamento <- rollmean(treinamento_ts, k=36, align="right")
+ultima_ma <- tail(ma_simples_treinamento, 1)
+
+ma_simples_proj <- ts(rep(ultima_ma, 55), start=c(2015, 56), end = c(2015, 75), freq=12)
+
+plot(treinamento_ts, ylim=c(342000, 6013000), ylab="Despesas", xlab="Tempo", bty="l", xaxt="n", xlim=c(2015,2021))
+axis(1, at=seq(2015, 2021), labels=format(seq(2015, 2021)))
+lines(ma_simples_treinamento, lwd=2, col="blue")
+lines(ma_simples_proj, lwd=2, lty=2, col="blue")
+lines(validacao_ts)
+
+plot(treinamento_ts-ma_simples_treinamento, xlab="Tempo", ylab="Resíduos", ylim=c(-1500000, 4000000), bty="l")
+Acf(treinamento_ts-ma_simples_treinamento)
+checkresiduals(treinamento_ts-ma_simples_treinamento, test="LB")
+
+accuracy(ma_simples_treinamento, treinamento_ts)
+accuracy(ma_simples_proj, validacao_ts)
+```
+O MAPE do modelo de média móvel também foi superior ao MAPE do Modelo Naive.
+Modelo de tendência exponencial:
+```{r Modelo de tendência exponencial}
+#Estima o modelo de tendência exp
+modelo_tendencia_exp <- tslm(treinamento_ts ~ trend, lambda=0)
+
+#resumo do modelo
+summary(modelo_tendencia_exp)
+
+#Verificando resíduos
+
+#Plotando os resíduos
+plot(modelo_tendencia_exp$residuals, xlab="Tempo", ylab="Resíduos", ylim=c(-0.5, 0.5), bty="l")
+
+#calcula a autocorrelação dos resíduos
+Acf(modelo_tendencia_exp$residuals)
+
+#verifica os resíduos com teste de Ljung-Box
+checkresiduals(modelo_tendencia_exp, test="LB")
+#CHeca a acuracia
+
+
+```
+Novamente o MAPE foi pior do que o modelo Naïve.
+
+Modelo de suavização exponencial (ZZZ)
+```{r Modelo de suavização exponencial (ZZZ)}
+modelo_ses1 <- ets(treinamento_ts, model = "ZZZ")
+summary(modelo_ses1)
+
+modelo_ses1_proj <- forecast(modelo_ses1, h=20, level=0.95)
+
+plot(modelo_ses1_proj, ylim=c(-300000, 6013000), ylab="Despesas", xlab="Tempo", bty="l", xaxt="n", xlim=c(2015,2021), flty=2)
+axis(1, at=seq(2015, 2021), labels=format(seq(2015, 2021)))
+lines(modelo_ses1$fitted, lwd=2, col="blue")
+lines(validacao_ts)
+
+accuracy(modelo_ses1_proj, validacao_ts)
+
+Acf(modelo_ses1_proj$residuals)
+checkresiduals(modelo_ses1_proj, test="LB")
+```
+
+
+Modelo Arima:
+```{r Modelo Arima}
+#plota o grafica da projecao
+par(mfrow=c(2,2))
+plot(db_ts, ylab="Despesas", xlab="Tempo", bty="l", xlim=c(2015,2021.25), main=("Serie sem diff"))
+plot(diff(db_ts, lag=1), ylab="Despesas", xlab="Tempo", bty="l", xlim=c(2015,2021.25), main=("diff lag 1"))
+plot(diff(db_ts, lag=12), ylab="Despesas", xlab="Tempo", bty="l", xlim=c(2015,2021.25), main=("diff lag 12"))
+plot(diff(diff(db_ts, lag=12), lag=1), ylab="Despesas", xlab="Tempo", bty="l", xlim=c(2015,2021.25), main=("diff lag 12 e entao diff lag 1"))
+
+#checar estacionariedade
+checkresiduals(db_ts)
+
+checkresiduals(diff(db_ts, lag=1))
+
+checkresiduals(diff(db_ts, lag=12))
+
+checkresiduals(diff(diff(db_ts, lag=12), lag=1))
+
+#diferencia 1 vez
+db_ts_diff <- diff(db_ts, lag=1)
+
+#executa o teste de KPSS
+summary(ur.kpss(db_ts))
+
+
+#executa o teste de KPSS
+summary(ur.kpss(db_ts_diff))
+
+
+#executa o teste de ADF
+summary(ur.df(db_ts))
+
+
+#executa o teste de ADF
+summary(ur.df(db_ts_diff))
+
+
+#############################################################
+# MODELO ARIMA
+#############################################################
+
+par(mfrow=c(1,2))
+plot(db_ts)
+plot(db_ts_diff)
+par(mfrow=c(1,1))
+
+ajuste_sazonal_db <- db_ts-db_ts_diff
+
+plot(ajuste_sazonal_db)
+
+#separa as amostras em treinamento e teste
+
+#define o tamanho da amostra de teste
+
+#define o tamanho da amostra de treinamento
+amostra_treino <- length(db_ts_diff) - amostra_validacao
+
+
+
+#cria a serie temporal de treinamento
+treinamento_ts_diff <- window(db_ts_diff, start=c(2015, 1), end=c(2015, amostra_treino))
+
+#cria a serie temporal de teste
+validacao_ts_diff <- window(db_ts_diff, start=c(2015, amostra_treino + 1), end=c(2015,amostra_treino + amostra_validacao))
+
+
+#executa o teste de KPSS
+summary(ur.kpss(treinamento_ts_diff))
+
+
+#executa o teste de ADF
+summary(ur.df(treinamento_ts_diff))
+
+#calcula a ACF
+Acf(treinamento_ts_diff)
+
+#calcula a PCF
+Pacf(treinamento_ts_diff)
+
+#Modelo Arima
+Modelo_ARIMA <- Arima(treinamento_ts_diff, order = c(2,1,1))
+
+#resumo modelo
+summary(Modelo_ARIMA)
+
+#projeta os proximos 12 meses
+modelo_ARIMA_proj <- forecast(Modelo_ARIMA, h=amostra_validacao, level=0.95)
+#plota o grafica da projecao
+plot(modelo_ARIMA_proj, ylab="Despesa", xlab="Tempo", bty="l", xaxt="n", xlim=c(2015,2024.25), flty=2)
+
+axis(1, at=seq(2015, 2024, 1), labels=format(seq(2015, 2024, 1)))
+
+lines(Modelo_ARIMA$fitted, lwd=2, col="blue")
+
+lines(validacao_ts_diff)
+
+#verifica precisao
+accuracy(modelo_ARIMA_proj, validacao_ts_diff)
+
+#função auto.arima
+auto.arima(treinamento_ts_diff, seasonal = FALSE, stepwise=FALSE, approximation = FALSE)
+
+
+```
+
+O modelo ARIMA teve um desempenho pior entre os modelos apresentados.
+Conclusão:
+Após todos os modelos testados e analisados conclui-se pela performance do modelo de suavização exponencial. Seus erros RMSE e MAPE são inferiores a todos os outros modelos, e a autocorrelação de seus resíduos não é estatisticamente relevante.

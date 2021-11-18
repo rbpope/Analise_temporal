@@ -1,0 +1,231 @@
+---
+title: "Trabalho 1 de Análise de séries temporais"
+output:
+  word_document: default
+  html_notebook: default
+  pdf_document: default
+---
+<H2>O Objetivo deste trabalho é de responder as seguintes arguições:</H2>
+1. Carregar o arquivo: DepartmentStoreSales_V2.xls
+2. Plotar o gráfico da série temporal
+3. Calcular o resumo estatístico da base
+4. Separar em amostra de desenvolvimento e teste da seguinte maneira
+    4.1 Desenvolvimento: 2005/1 até 2009/4
+    4.2 Teste: 2010/1 até 2010/4
+5. Estimar um modelo de tendência linear
+6. Estimar um modelo de tendência quadrática (polinômio de grau 2)
+7. Estimar um modelo de tendência linear com sazonalidade
+8. Estimar um modelo de tendência quadrática (polinômio de grau 2) com sazonalidade
+9. Calcular os erros de projeção para cada modelo
+10. Escolher o melhor modelo de projeção justificando
+ -----------------------------------------------------------------------------------
+
+```{r Bibliotecas Necessárias, message=FALSE, warning=FALSE, include=FALSE, paged.print=FALSE}
+library(forecast)
+library(readxl)
+library(zoo)
+library(lubridate)
+library(tidyverse)
+```
+
+1. Carregar o arquivo: DepartmentStoreSalesV2.xls
+```{r Carregar Arquivo}
+sales<- read_excel("DepartmentStoreSales_V2.xls")
+```
+2. Plotar o gráfico da série temporal:
+Converter em série temporal
+```{r}
+sales_ts <- ts(sales$Sales, start=c(2005,1), end=c(2010,04), frequency = 4)
+```
+Plotar os gráficos:
+```{r}
+plot(sales_ts, xlab="Tempo", ylab="Vendas",ylim=c(40000, 110000), type = "l")
+plot(sales$Sales, xlab="Tempo", ylab="Vendas", ylim=c(40000, 110000), type="p")
+```
+3. Calcular Resumo estatístico da base:
+```{r}
+summary(sales)
+summary(sales_ts)
+```
+4. Separar em amostra de desenvolvimento e teste da seguinte maneira
+4.1 Desenvolvimento: 2005/1 até 2009/4
+```{r}
+tam_amostra_teste <- 4
+tam_amostra_treinamento <- length(sales_ts) - tam_amostra_teste
+treinamento_ts <- window(sales_ts, start=c(2005, 1), end=c(2005,tam_amostra_treinamento))
+treinamento_ts
+```
+4.2 Teste: 2010/1 até 2010/4
+```{r}
+validacao_ts <- window(sales_ts, start=c(2005, tam_amostra_treinamento + 1), end=c(2005,tam_amostra_treinamento+tam_amostra_teste))
+validacao_ts
+```
+Avaliação gráfica do treinamento e validação
+```{r}
+plot(treinamento_ts, xlab="Tempo", ylab="Vendas", xaxt="n" , ylim=c(40000, 110000), xlim=c(2005, 2011.25), bty="l")
+
+axis(1, at=seq(2005, 2010, 24), labels=format(seq(2005, 2010,24)))
+
+lines(validacao_ts, bty="l", col="red")
+
+```
+
+5. Estimar um modelo de tendência linear
+```{r}
+modelo_tendencia_linear <- tslm(treinamento_ts ~ trend)
+summary(modelo_tendencia_linear)
+```
+Plotar resíduos
+```{r}
+plot(modelo_tendencia_linear$residuals, xlab="Tempo", ylab="Resíduos", ylim=c(-50000, 50000), bty="l")
+```
+Calcular a auto-correlação dos resíduos
+```{r}
+Acf(modelo_tendencia_linear$residuals, main="Auto-correlação dos Resíduos")
+```
+Verificar resíduos com teste de "Ljung-Box"
+```{r}
+checkresiduals(modelo_tendencia_linear, test="LB")
+```
+
+6. Estimar um modelo de tendência quadrática (polinômio de grau 2)
+```{r}
+modelo_tendencia_poli <- tslm(treinamento_ts ~ trend + I(trend^2))
+modelo_tendencia_poli
+```
+Plotar resíduos
+```{r}
+plot(modelo_tendencia_poli$residuals, xlab="Tempo", ylab="Resíduos", bty="l")
+```
+Calcular a auto-correlação dos resíduos
+```{r}
+Acf(modelo_tendencia_poli$residuals, main="Auto-correlação dos Resíduos")
+```
+Verificar resíduos com teste de "Ljung-Box"
+```{r}
+checkresiduals(modelo_tendencia_poli$residuals, test="LB")
+```
+plot do modelo com tendência
+```{r}
+plot(treinamento_ts, xlab="Tempo", ylab="Vendas", bty="l")
+lines(modelo_tendencia_poli$fitted.values, lwd=2)
+```
+Projeta o modelo no período de Validação
+```{r}
+modelo_tendencia_poli_proj <- forecast(modelo_tendencia_poli, h = tam_amostra_teste, level=0.95)
+plot(modelo_tendencia_poli_proj, xlab="Tempo", ylab="Vendas", xaxt="n" , ylim=c(40000, 110000), xlim=c(2005, 2010.25), bty="l", flty=2,main="Forecast from Polynomial regression model")
+
+axis(1, at=seq(2005, 2010, 1), labels=format(seq(2005, 2010,1)))
+
+lines(validacao_ts)
+lines(modelo_tendencia_poli_proj$fitted, lwd=2, col="orange")
+
+
+```
+Verificar a acurácia do modelo:
+```{r}
+accuracy(modelo_tendencia_poli_proj, validacao_ts)
+```
+Calular o modelo ingenuo e verifica a sua acurácia:
+```{r}
+modelo_ingenuo <- naive(treinamento_ts, level=0, h=tam_amostra_teste)
+accuracy(modelo_ingenuo, validacao_ts)
+```
+```{r}
+plot(modelo_ingenuo, xlab="Tempo", ylab="Vendas", xaxt="n" ,main="Previsão do Modelo Naive",  ylim=c(40000, 110000), xlim=c(2005, 2010), bty="l", flty=2)
+
+axis(1, at=seq(2005, 2010, 1), labels=format(seq(2005, 2010,1)))
+
+lines(validacao_ts)
+
+```
+Projetar o futuro
+```{r}
+modelo_tendencia_poli_final <- tslm(sales_ts ~ trend + I(trend^2))
+summary(modelo_tendencia_poli_final)
+modelo_tendencia_poli_final_proj <- forecast(modelo_tendencia_poli_final, h=36, level=0.95)
+```
+PLotagem do futuro
+```{r}
+plot(modelo_tendencia_poli_final_proj, xlab="Tempo", ylab="Vendas", ylim=c(40000, 110000), xlim=c(2005, 2010), bty="l", flty=2, main="Forecast from Polynomial regression model")
+axis(1, at=seq(2005, 2010, 1), labels=format(seq(2005, 2010,1)))
+lines(modelo_tendencia_poli_final_proj$fitted, lwd=2, col="orange")
+```
+7. Estimar um modelo de tendência linear com sazonalidade
+```{r}
+ggseasonplot(sales_ts, main="Vendas por quarto")
+dummies_mensais <- seasonaldummy(sales_ts)
+modelo_sazonalidade_linear <- tslm(treinamento_ts ~ season)
+summary(modelo_sazonalidade_linear)
+```
+PLotando
+```{r}
+plot(modelo_sazonalidade_linear$residuals, xlab="Tempo", ylab="Resíduos", ylim=c(-10000, 10000), bty="l")
+```
+
+Calcula a Autocorrelação dos resíduos
+```{r}
+Acf(modelo_sazonalidade_linear$residuals)
+```
+Checagem dos resíduos com teste de Ljung - Box
+```{r}
+checkresiduals(modelo_sazonalidade_linear, test="LB")
+```
+PLota o modelo com sazonalidade
+```{r}
+plot(treinamento_ts, xlab="Tempo", ylab="Vendas", ylim=c(50000, 110000), bty="l")
+lines(modelo_sazonalidade_linear$fitted.values, lwd=2, col="blue")
+```
+8. Estimar um modelo de tendência quadrática (polinômio de grau 2) com sazonalidade
+Criar o modelo
+```{r}
+modelo_sazonal_tend_linear <- tslm(treinamento_ts ~ season + trend + I(trend^2))
+summary(modelo_sazonal_tend_linear)
+```
+Plotando Resíduos
+```{r}
+plot(modelo_sazonal_tend_linear$residuals, xlab="Tempo", ylab="Resíduos", ylim=c(-5000, 5000), bty="l")
+```
+Calcular a autocorrelação dos resíduos
+```{r}
+Acf(modelo_sazonal_tend_linear$residuals)
+```
+Aplicando o teste de Ljung-Box
+```{r}
+checkresiduals(modelo_sazonal_tend_linear, test="LB")
+```
+Plotagem do modelo sazonal com tendência
+```{r}
+plot(treinamento_ts, xlab="Tempo", ylab="Vendas", ylim=c(40000, 110000), bty="l")
+lines(modelo_sazonal_tend_linear$fitted.values, lwd=2, col="red")
+```
+Modelo durante a validação:
+```{r}
+modelo_sazonal_tend_linear_proj <- forecast(modelo_sazonal_tend_linear, h = tam_amostra_teste, level=0.95)
+plot(modelo_sazonal_tend_linear_proj, xlab="Tempo", ylab="Passageiros", xaxt="n" , ylim=c(40000, 110000), xlim=c(2005, 2011.25), bty="l", flty=2, main="Forecast from Seasonal & Tendencia regression model")
+
+axis(1, at=seq(2005, 2010, 1), labels=format(seq(2005, 2010,1)))
+
+lines(validacao_ts)
+lines(modelo_sazonal_tend_linear_proj$fitted, lwd=2, col="green")
+```
+9. Calcular os erros de projeção para cada modelo:
+      modelo de tendência linear
+```{r}
+summary(modelo_tendencia_linear)
+```
+      modelo Naive
+```{r}
+accuracy(modelo_ingenuo, validacao_ts)
+```
+      modelo de tendência quadrática (polinômio de grau 2)
+```{r}
+accuracy(modelo_tendencia_poli_proj, validacao_ts)
+```
+    modelo de tendência quadrática (polinômio de grau 2) com sazonalidade
+```{r}
+accuracy(modelo_sazonal_tend_linear_proj, validacao_ts)
+```
+
+10. Escolher o melhor modelo de projeção justificando
+O melhor modelo de projeção foi o modelo de tendência quadrática (polinômio de grau 2) com sazonalidade, pois no teste de resíduos não houve auto correlação dos resíduos, o MAPE é menor do que o modelo Naive.

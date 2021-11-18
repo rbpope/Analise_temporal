@@ -1,0 +1,603 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+%
+\documentclass[
+]{article}
+\usepackage{amsmath,amssymb}
+\usepackage{lmodern}
+\usepackage{ifxetex,ifluatex}
+\ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math}
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{xcolor}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\IfFileExists{bookmark.sty}{\usepackage{bookmark}}{\usepackage{hyperref}}
+\hypersetup{
+  pdftitle={Trabalho 1 de Análise de séries temporais},
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+\urlstyle{same} % disable monospaced font for URLs
+\usepackage[margin=1in]{geometry}
+\usepackage{color}
+\usepackage{fancyvrb}
+\newcommand{\VerbBar}{|}
+\newcommand{\VERB}{\Verb[commandchars=\\\{\}]}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
+% Add ',fontsize=\small' for more characters per line
+\usepackage{framed}
+\definecolor{shadecolor}{RGB}{248,248,248}
+\newenvironment{Shaded}{\begin{snugshade}}{\end{snugshade}}
+\newcommand{\AlertTok}[1]{\textcolor[rgb]{0.94,0.16,0.16}{#1}}
+\newcommand{\AnnotationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.77,0.63,0.00}{#1}}
+\newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\BuiltInTok}[1]{#1}
+\newcommand{\CharTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\CommentTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\CommentVarTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{#1}}
+\newcommand{\DecValTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\DocumentationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ErrorTok}[1]{\textcolor[rgb]{0.64,0.00,0.00}{\textbf{#1}}}
+\newcommand{\ExtensionTok}[1]{#1}
+\newcommand{\FloatTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\ImportTok}[1]{#1}
+\newcommand{\InformationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\NormalTok}[1]{#1}
+\newcommand{\OperatorTok}[1]{\textcolor[rgb]{0.81,0.36,0.00}{\textbf{#1}}}
+\newcommand{\OtherTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{#1}}
+\newcommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\RegionMarkerTok}[1]{#1}
+\newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\StringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\VariableTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\WarningTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\usepackage{graphicx}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+% Set default figure placement to htbp
+\makeatletter
+\def\fps@figure{htbp}
+\makeatother
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\ifluatex
+  \usepackage{selnolig}  % disable illegal ligatures
+\fi
+
+\title{Trabalho 1 de Análise de séries temporais}
+\author{}
+\date{\vspace{-2.5em}}
+
+\begin{document}
+\maketitle
+
+O Objetivo deste trabalho é de responder as seguintes arguições:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\item
+  Carregar o arquivo: DepartmentStoreSales\_V2.xls
+\item
+  Plotar o gráfico da série temporal
+\item
+  Calcular o resumo estatístico da base
+\item
+  Separar em amostra de desenvolvimento e teste da seguinte maneira 4.1
+  Desenvolvimento: 2005/1 até 2009/4 4.2 Teste: 2010/1 até 2010/4
+\item
+  Estimar um modelo de tendência linear
+\item
+  Estimar um modelo de tendência quadrática (polinômio de grau 2)
+\item
+  Estimar um modelo de tendência linear com sazonalidade
+\item
+  Estimar um modelo de tendência quadrática (polinômio de grau 2) com
+  sazonalidade
+\item
+  Calcular os erros de projeção para cada modelo
+\item
+  Escolher o melhor modelo de projeção justificando
+\item
+  Carregar o arquivo: DepartmentStoreSalesV2.xls
+\end{enumerate}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{sales}\OtherTok{\textless{}{-}} \FunctionTok{read\_excel}\NormalTok{(}\StringTok{"DepartmentStoreSales\_V2.xls"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{1}
+\tightlist
+\item
+  Plotar o gráfico da série temporal: Converter em série temporal
+\end{enumerate}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{sales\_ts }\OtherTok{\textless{}{-}} \FunctionTok{ts}\NormalTok{(sales}\SpecialCharTok{$}\NormalTok{Sales, }\AttributeTok{start=}\FunctionTok{c}\NormalTok{(}\DecValTok{2005}\NormalTok{,}\DecValTok{1}\NormalTok{), }\AttributeTok{end=}\FunctionTok{c}\NormalTok{(}\DecValTok{2010}\NormalTok{,}\DecValTok{04}\NormalTok{), }\AttributeTok{frequency =} \DecValTok{4}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+Plotar os gráficos:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{plot}\NormalTok{(sales\_ts, }\AttributeTok{xlab=}\StringTok{"Tempo"}\NormalTok{, }\AttributeTok{ylab=}\StringTok{"Vendas"}\NormalTok{,}\AttributeTok{ylim=}\FunctionTok{c}\NormalTok{(}\DecValTok{40000}\NormalTok{, }\DecValTok{110000}\NormalTok{), }\AttributeTok{type =} \StringTok{"l"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{Trabalho_files/figure-latex/unnamed-chunk-2-1.pdf}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{plot}\NormalTok{(sales}\SpecialCharTok{$}\NormalTok{Sales, }\AttributeTok{xlab=}\StringTok{"Tempo"}\NormalTok{, }\AttributeTok{ylab=}\StringTok{"Vendas"}\NormalTok{, }\AttributeTok{ylim=}\FunctionTok{c}\NormalTok{(}\DecValTok{40000}\NormalTok{, }\DecValTok{110000}\NormalTok{), }\AttributeTok{type=}\StringTok{"p"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{Trabalho_files/figure-latex/unnamed-chunk-2-2.pdf} 3.
+Calcular Resumo estatístico da base:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{summary}\NormalTok{(sales)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##       Year         Quarter          Sales       
+##  Min.   :2005   Min.   : 1.00   Min.   : 48617  
+##  1st Qu.:2006   1st Qu.: 6.75   1st Qu.: 52681  
+##  Median :2008   Median :12.50   Median : 59440  
+##  Mean   :2008   Mean   :12.50   Mean   : 64757  
+##  3rd Qu.:2009   3rd Qu.:18.25   3rd Qu.: 76835  
+##  Max.   :2010   Max.   :24.00   Max.   :103337
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{summary}\NormalTok{(sales\_ts)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+##   48617   52681   59440   64757   76835  103337
+\end{verbatim}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{3}
+\tightlist
+\item
+  Separar em amostra de desenvolvimento e teste da seguinte maneira 4.1
+  Desenvolvimento: 2005/1 até 2009/4
+\end{enumerate}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{tam\_amostra\_teste }\OtherTok{\textless{}{-}} \DecValTok{4}
+\NormalTok{tam\_amostra\_treinamento }\OtherTok{\textless{}{-}} \FunctionTok{length}\NormalTok{(sales\_ts) }\SpecialCharTok{{-}}\NormalTok{ tam\_amostra\_teste}
+\NormalTok{treinamento\_ts }\OtherTok{\textless{}{-}} \FunctionTok{window}\NormalTok{(sales\_ts, }\AttributeTok{start=}\FunctionTok{c}\NormalTok{(}\DecValTok{2005}\NormalTok{, }\DecValTok{1}\NormalTok{), }\AttributeTok{end=}\FunctionTok{c}\NormalTok{(}\DecValTok{2005}\NormalTok{,tam\_amostra\_treinamento))}
+\NormalTok{treinamento\_ts}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##       Qtr1  Qtr2  Qtr3  Qtr4
+## 2005 50147 49325 57048 76781
+## 2006 48617 50898 58517 77691
+## 2007 50862 53028 58849 79660
+## 2008 51640 54119 65681 85175
+## 2009 56405 60031 71486 92183
+\end{verbatim}
+
+4.2 Teste: 2010/1 até 2010/4
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{validacao\_ts }\OtherTok{\textless{}{-}} \FunctionTok{window}\NormalTok{(sales\_ts, }\AttributeTok{start=}\FunctionTok{c}\NormalTok{(}\DecValTok{2005}\NormalTok{, tam\_amostra\_treinamento }\SpecialCharTok{+} \DecValTok{1}\NormalTok{), }\AttributeTok{end=}\FunctionTok{c}\NormalTok{(}\DecValTok{2005}\NormalTok{,tam\_amostra\_treinamento}\SpecialCharTok{+}\NormalTok{tam\_amostra\_teste))}
+\NormalTok{validacao\_ts}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##        Qtr1   Qtr2   Qtr3   Qtr4
+## 2010  60800  64900  76997 103337
+\end{verbatim}
+
+Avaliação gráfica do treinamento e validação
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{plot}\NormalTok{(treinamento\_ts, }\AttributeTok{xlab=}\StringTok{"Tempo"}\NormalTok{, }\AttributeTok{ylab=}\StringTok{"Vendas"}\NormalTok{, }\AttributeTok{xaxt=}\StringTok{"n"}\NormalTok{ , }\AttributeTok{ylim=}\FunctionTok{c}\NormalTok{(}\DecValTok{40000}\NormalTok{, }\DecValTok{110000}\NormalTok{), }\AttributeTok{xlim=}\FunctionTok{c}\NormalTok{(}\DecValTok{2005}\NormalTok{, }\FloatTok{2011.25}\NormalTok{), }\AttributeTok{bty=}\StringTok{"l"}\NormalTok{)}
+
+\FunctionTok{axis}\NormalTok{(}\DecValTok{1}\NormalTok{, }\AttributeTok{at=}\FunctionTok{seq}\NormalTok{(}\DecValTok{2005}\NormalTok{, }\DecValTok{2010}\NormalTok{, }\DecValTok{24}\NormalTok{), }\AttributeTok{labels=}\FunctionTok{format}\NormalTok{(}\FunctionTok{seq}\NormalTok{(}\DecValTok{2005}\NormalTok{, }\DecValTok{2010}\NormalTok{,}\DecValTok{24}\NormalTok{)))}
+
+\FunctionTok{lines}\NormalTok{(validacao\_ts, }\AttributeTok{bty=}\StringTok{"l"}\NormalTok{, }\AttributeTok{col=}\StringTok{"red"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{Trabalho_files/figure-latex/unnamed-chunk-6-1.pdf}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{4}
+\tightlist
+\item
+  Estimar um modelo de tendência linear
+\end{enumerate}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{modelo\_tendencia\_linear }\OtherTok{\textless{}{-}} \FunctionTok{tslm}\NormalTok{(treinamento\_ts }\SpecialCharTok{\textasciitilde{}}\NormalTok{ trend)}
+\FunctionTok{summary}\NormalTok{(modelo\_tendencia\_linear)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 
+## Call:
+## tslm(formula = treinamento_ts ~ trend)
+## 
+## Residuals:
+##    Min     1Q Median     3Q    Max 
+## -13439  -9119  -3051   5906  21322 
+## 
+## Coefficients:
+##             Estimate Std. Error t value Pr(>|t|)    
+## (Intercept)  51183.7     5609.0   9.125 3.58e-08 ***
+## trend         1068.9      468.2   2.283   0.0348 *  
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Residual standard error: 12070 on 18 degrees of freedom
+## Multiple R-squared:  0.2245, Adjusted R-squared:  0.1814 
+## F-statistic: 5.211 on 1 and 18 DF,  p-value: 0.03482
+\end{verbatim}
+
+Plotar resíduos
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{plot}\NormalTok{(modelo\_tendencia\_linear}\SpecialCharTok{$}\NormalTok{residuals, }\AttributeTok{xlab=}\StringTok{"Tempo"}\NormalTok{, }\AttributeTok{ylab=}\StringTok{"Resíduos"}\NormalTok{, }\AttributeTok{ylim=}\FunctionTok{c}\NormalTok{(}\SpecialCharTok{{-}}\DecValTok{50000}\NormalTok{, }\DecValTok{50000}\NormalTok{), }\AttributeTok{bty=}\StringTok{"l"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{Trabalho_files/figure-latex/unnamed-chunk-8-1.pdf}
+Calcular a auto-correlação dos resíduos
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{Acf}\NormalTok{(modelo\_tendencia\_linear}\SpecialCharTok{$}\NormalTok{residuals, }\AttributeTok{main=}\StringTok{"Auto{-}correlação dos Resíduos"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{Trabalho_files/figure-latex/unnamed-chunk-9-1.pdf}
+Verificar resíduos com teste de ``Ljung-Box''
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{checkresiduals}\NormalTok{(modelo\_tendencia\_linear, }\AttributeTok{test=}\StringTok{"LB"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{Trabalho_files/figure-latex/unnamed-chunk-10-1.pdf}
+
+\begin{verbatim}
+## 
+##  Ljung-Box test
+## 
+## data:  Residuals from Linear regression model
+## Q* = 23.539, df = 3, p-value = 3.117e-05
+## 
+## Model df: 2.   Total lags used: 5
+\end{verbatim}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{5}
+\tightlist
+\item
+  Estimar um modelo de tendência quadrática (polinômio de grau 2)
+\end{enumerate}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{modelo\_tendencia\_poli }\OtherTok{\textless{}{-}} \FunctionTok{tslm}\NormalTok{(treinamento\_ts }\SpecialCharTok{\textasciitilde{}}\NormalTok{ trend }\SpecialCharTok{+} \FunctionTok{I}\NormalTok{(trend}\SpecialCharTok{\^{}}\DecValTok{2}\NormalTok{))}
+\NormalTok{modelo\_tendencia\_poli}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 
+## Call:
+## tslm(formula = treinamento_ts ~ trend + I(trend^2))
+## 
+## Coefficients:
+## (Intercept)        trend   I(trend^2)  
+##    56462.70      -370.83        68.56
+\end{verbatim}
+
+Plotar resíduos
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{plot}\NormalTok{(modelo\_tendencia\_poli}\SpecialCharTok{$}\NormalTok{residuals, }\AttributeTok{xlab=}\StringTok{"Tempo"}\NormalTok{, }\AttributeTok{ylab=}\StringTok{"Resíduos"}\NormalTok{, }\AttributeTok{bty=}\StringTok{"l"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{Trabalho_files/figure-latex/unnamed-chunk-12-1.pdf}
+Calcular a auto-correlação dos resíduos
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{Acf}\NormalTok{(modelo\_tendencia\_poli}\SpecialCharTok{$}\NormalTok{residuals, }\AttributeTok{main=}\StringTok{"Auto{-}correlação dos Resíduos"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{Trabalho_files/figure-latex/unnamed-chunk-13-1.pdf}
+Verificar resíduos com teste de ``Ljung-Box''
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{checkresiduals}\NormalTok{(modelo\_tendencia\_poli}\SpecialCharTok{$}\NormalTok{residuals, }\AttributeTok{test=}\StringTok{"LB"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Warning in modeldf.default(object): Could not find appropriate degrees of
+## freedom for this model.
+\end{verbatim}
+
+\includegraphics{Trabalho_files/figure-latex/unnamed-chunk-14-1.pdf}
+plot do modelo com tendência
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{plot}\NormalTok{(treinamento\_ts, }\AttributeTok{xlab=}\StringTok{"Tempo"}\NormalTok{, }\AttributeTok{ylab=}\StringTok{"Vendas"}\NormalTok{, }\AttributeTok{bty=}\StringTok{"l"}\NormalTok{)}
+\FunctionTok{lines}\NormalTok{(modelo\_tendencia\_poli}\SpecialCharTok{$}\NormalTok{fitted.values, }\AttributeTok{lwd=}\DecValTok{2}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{Trabalho_files/figure-latex/unnamed-chunk-15-1.pdf}
+Projeta o modelo no período de Validação
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{modelo\_tendencia\_poli\_proj }\OtherTok{\textless{}{-}} \FunctionTok{forecast}\NormalTok{(modelo\_tendencia\_poli, }\AttributeTok{h =}\NormalTok{ tam\_amostra\_teste, }\AttributeTok{level=}\FloatTok{0.95}\NormalTok{)}
+\FunctionTok{plot}\NormalTok{(modelo\_tendencia\_poli\_proj, }\AttributeTok{xlab=}\StringTok{"Tempo"}\NormalTok{, }\AttributeTok{ylab=}\StringTok{"Vendas"}\NormalTok{, }\AttributeTok{xaxt=}\StringTok{"n"}\NormalTok{ , }\AttributeTok{ylim=}\FunctionTok{c}\NormalTok{(}\DecValTok{40000}\NormalTok{, }\DecValTok{110000}\NormalTok{), }\AttributeTok{xlim=}\FunctionTok{c}\NormalTok{(}\DecValTok{2005}\NormalTok{, }\FloatTok{2010.25}\NormalTok{), }\AttributeTok{bty=}\StringTok{"l"}\NormalTok{, }\AttributeTok{flty=}\DecValTok{2}\NormalTok{,}\AttributeTok{main=}\StringTok{"Forecast from Polynomial regression model"}\NormalTok{)}
+
+\FunctionTok{axis}\NormalTok{(}\DecValTok{1}\NormalTok{, }\AttributeTok{at=}\FunctionTok{seq}\NormalTok{(}\DecValTok{2005}\NormalTok{, }\DecValTok{2010}\NormalTok{, }\DecValTok{1}\NormalTok{), }\AttributeTok{labels=}\FunctionTok{format}\NormalTok{(}\FunctionTok{seq}\NormalTok{(}\DecValTok{2005}\NormalTok{, }\DecValTok{2010}\NormalTok{,}\DecValTok{1}\NormalTok{)))}
+
+\FunctionTok{lines}\NormalTok{(validacao\_ts)}
+\FunctionTok{lines}\NormalTok{(modelo\_tendencia\_poli\_proj}\SpecialCharTok{$}\NormalTok{fitted, }\AttributeTok{lwd=}\DecValTok{2}\NormalTok{, }\AttributeTok{col=}\StringTok{"orange"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{Trabalho_files/figure-latex/unnamed-chunk-16-1.pdf}
+Verificar a acurácia do modelo:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{accuracy}\NormalTok{(modelo\_tendencia\_poli\_proj, validacao\_ts)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##                         ME     RMSE       MAE        MPE     MAPE     MASE
+## Training set  1.455458e-12 11273.48  9346.619  -2.920362 14.51938 2.999076
+## Test set     -6.403989e+03 15167.09 14546.239 -12.235160 20.11448 4.667492
+##                    ACF1 Theil's U
+## Training set -0.1307409        NA
+## Test set      0.1444087 0.9171101
+\end{verbatim}
+
+Calular o modelo ingenuo e verifica a sua acurácia:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{modelo\_ingenuo }\OtherTok{\textless{}{-}} \FunctionTok{naive}\NormalTok{(treinamento\_ts, }\AttributeTok{level=}\DecValTok{0}\NormalTok{, }\AttributeTok{h=}\NormalTok{tam\_amostra\_teste)}
+\FunctionTok{accuracy}\NormalTok{(modelo\_ingenuo, validacao\_ts)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##                      ME     RMSE      MAE         MPE     MAPE     MASE
+## Training set   2212.421 17122.92 14065.58  -0.3423223 22.56419 4.513261
+## Test set     -15674.500 22826.96 21251.50 -25.6460832 31.04299 6.819028
+##                    ACF1 Theil's U
+## Training set -0.2899524        NA
+## Test set      0.1722954  1.331418
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{plot}\NormalTok{(modelo\_ingenuo, }\AttributeTok{xlab=}\StringTok{"Tempo"}\NormalTok{, }\AttributeTok{ylab=}\StringTok{"Vendas"}\NormalTok{, }\AttributeTok{xaxt=}\StringTok{"n"}\NormalTok{ ,}\AttributeTok{main=}\StringTok{"Previsão do Modelo Naive"}\NormalTok{,  }\AttributeTok{ylim=}\FunctionTok{c}\NormalTok{(}\DecValTok{40000}\NormalTok{, }\DecValTok{110000}\NormalTok{), }\AttributeTok{xlim=}\FunctionTok{c}\NormalTok{(}\DecValTok{2005}\NormalTok{, }\DecValTok{2010}\NormalTok{), }\AttributeTok{bty=}\StringTok{"l"}\NormalTok{, }\AttributeTok{flty=}\DecValTok{2}\NormalTok{)}
+
+\FunctionTok{axis}\NormalTok{(}\DecValTok{1}\NormalTok{, }\AttributeTok{at=}\FunctionTok{seq}\NormalTok{(}\DecValTok{2005}\NormalTok{, }\DecValTok{2010}\NormalTok{, }\DecValTok{1}\NormalTok{), }\AttributeTok{labels=}\FunctionTok{format}\NormalTok{(}\FunctionTok{seq}\NormalTok{(}\DecValTok{2005}\NormalTok{, }\DecValTok{2010}\NormalTok{,}\DecValTok{1}\NormalTok{)))}
+
+\FunctionTok{lines}\NormalTok{(validacao\_ts)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{Trabalho_files/figure-latex/unnamed-chunk-19-1.pdf}
+Projetar o futuro
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{modelo\_tendencia\_poli\_final }\OtherTok{\textless{}{-}} \FunctionTok{tslm}\NormalTok{(sales\_ts }\SpecialCharTok{\textasciitilde{}}\NormalTok{ trend }\SpecialCharTok{+} \FunctionTok{I}\NormalTok{(trend}\SpecialCharTok{\^{}}\DecValTok{2}\NormalTok{))}
+\FunctionTok{summary}\NormalTok{(modelo\_tendencia\_poli\_final)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 
+## Call:
+## tslm(formula = sales_ts ~ trend + I(trend^2))
+## 
+## Residuals:
+##    Min     1Q Median     3Q    Max 
+## -15444  -8297  -4950   5517  20416 
+## 
+## Coefficients:
+##             Estimate Std. Error t value Pr(>|t|)    
+## (Intercept) 57028.00    8488.12   6.719  1.2e-06 ***
+## trend        -420.03    1564.42  -0.268    0.791    
+## I(trend^2)     63.57      60.75   1.046    0.307    
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Residual standard error: 12720 on 21 degrees of freedom
+## Multiple R-squared:  0.3398, Adjusted R-squared:  0.277 
+## F-statistic: 5.405 on 2 and 21 DF,  p-value: 0.01277
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{modelo\_tendencia\_poli\_final\_proj }\OtherTok{\textless{}{-}} \FunctionTok{forecast}\NormalTok{(modelo\_tendencia\_poli\_final, }\AttributeTok{h=}\DecValTok{36}\NormalTok{, }\AttributeTok{level=}\FloatTok{0.95}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+PLotagem do futuro
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{plot}\NormalTok{(modelo\_tendencia\_poli\_final\_proj, }\AttributeTok{xlab=}\StringTok{"Tempo"}\NormalTok{, }\AttributeTok{ylab=}\StringTok{"Vendas"}\NormalTok{, }\AttributeTok{ylim=}\FunctionTok{c}\NormalTok{(}\DecValTok{40000}\NormalTok{, }\DecValTok{110000}\NormalTok{), }\AttributeTok{xlim=}\FunctionTok{c}\NormalTok{(}\DecValTok{2005}\NormalTok{, }\DecValTok{2010}\NormalTok{), }\AttributeTok{bty=}\StringTok{"l"}\NormalTok{, }\AttributeTok{flty=}\DecValTok{2}\NormalTok{, }\AttributeTok{main=}\StringTok{"Forecast from Polynomial regression model"}\NormalTok{)}
+\FunctionTok{axis}\NormalTok{(}\DecValTok{1}\NormalTok{, }\AttributeTok{at=}\FunctionTok{seq}\NormalTok{(}\DecValTok{2005}\NormalTok{, }\DecValTok{2010}\NormalTok{, }\DecValTok{1}\NormalTok{), }\AttributeTok{labels=}\FunctionTok{format}\NormalTok{(}\FunctionTok{seq}\NormalTok{(}\DecValTok{2005}\NormalTok{, }\DecValTok{2010}\NormalTok{,}\DecValTok{1}\NormalTok{)))}
+\FunctionTok{lines}\NormalTok{(modelo\_tendencia\_poli\_final\_proj}\SpecialCharTok{$}\NormalTok{fitted, }\AttributeTok{lwd=}\DecValTok{2}\NormalTok{, }\AttributeTok{col=}\StringTok{"orange"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{Trabalho_files/figure-latex/unnamed-chunk-21-1.pdf} 7.
+Estimar um modelo de tendência linear com sazonalidade
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{ggseasonplot}\NormalTok{(sales\_ts, }\AttributeTok{main=}\StringTok{"Vendas por quarto"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{Trabalho_files/figure-latex/unnamed-chunk-22-1.pdf}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{dummies\_mensais }\OtherTok{\textless{}{-}} \FunctionTok{seasonaldummy}\NormalTok{(sales\_ts)}
+\NormalTok{modelo\_sazonalidade\_linear }\OtherTok{\textless{}{-}} \FunctionTok{tslm}\NormalTok{(treinamento\_ts }\SpecialCharTok{\textasciitilde{}}\NormalTok{ season)}
+\FunctionTok{summary}\NormalTok{(modelo\_sazonalidade\_linear)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 
+## Call:
+## tslm(formula = treinamento_ts ~ season)
+## 
+## Residuals:
+##    Min     1Q Median     3Q    Max 
+##  -5517  -3550  -1030   2999   9885 
+## 
+## Coefficients:
+##             Estimate Std. Error t value Pr(>|t|)    
+## (Intercept)    51534       2281  22.591 1.45e-13 ***
+## season2         1946       3226   0.603  0.55483    
+## season3        10782       3226   3.342  0.00414 ** 
+## season4        30764       3226   9.536 5.30e-08 ***
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Residual standard error: 5101 on 16 degrees of freedom
+## Multiple R-squared:  0.877,  Adjusted R-squared:  0.8539 
+## F-statistic: 38.02 on 3 and 16 DF,  p-value: 1.652e-07
+\end{verbatim}
+
+PLotando
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{plot}\NormalTok{(modelo\_sazonalidade\_linear}\SpecialCharTok{$}\NormalTok{residuals, }\AttributeTok{xlab=}\StringTok{"Tempo"}\NormalTok{, }\AttributeTok{ylab=}\StringTok{"Resíduos"}\NormalTok{, }\AttributeTok{ylim=}\FunctionTok{c}\NormalTok{(}\SpecialCharTok{{-}}\DecValTok{10000}\NormalTok{, }\DecValTok{10000}\NormalTok{), }\AttributeTok{bty=}\StringTok{"l"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{Trabalho_files/figure-latex/unnamed-chunk-23-1.pdf}
+Calcula a Autocorrelação dos resíduos
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{Acf}\NormalTok{(modelo\_sazonalidade\_linear}\SpecialCharTok{$}\NormalTok{residuals)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{Trabalho_files/figure-latex/unnamed-chunk-24-1.pdf}
+Checagem dos resíduos com teste de Ljung - Box
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{checkresiduals}\NormalTok{(modelo\_sazonalidade\_linear, }\AttributeTok{test=}\StringTok{"LB"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{Trabalho_files/figure-latex/unnamed-chunk-25-1.pdf}
+
+\begin{verbatim}
+## 
+##  Ljung-Box test
+## 
+## data:  Residuals from Linear regression model
+## Q* = 31.276, df = 3, p-value = 7.437e-07
+## 
+## Model df: 4.   Total lags used: 7
+\end{verbatim}
+
+PLota o modelo com sazonalidade
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{plot}\NormalTok{(treinamento\_ts, }\AttributeTok{xlab=}\StringTok{"Tempo"}\NormalTok{, }\AttributeTok{ylab=}\StringTok{"Vendas"}\NormalTok{, }\AttributeTok{ylim=}\FunctionTok{c}\NormalTok{(}\DecValTok{50000}\NormalTok{, }\DecValTok{110000}\NormalTok{), }\AttributeTok{bty=}\StringTok{"l"}\NormalTok{)}
+\FunctionTok{lines}\NormalTok{(modelo\_sazonalidade\_linear}\SpecialCharTok{$}\NormalTok{fitted.values, }\AttributeTok{lwd=}\DecValTok{2}\NormalTok{, }\AttributeTok{col=}\StringTok{"blue"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{Trabalho_files/figure-latex/unnamed-chunk-26-1.pdf}
+
+\end{document}
